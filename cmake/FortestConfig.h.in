@@ -1,0 +1,11 @@
+#ifndef FORTEST_CONFIG_H
+#define FORTEST_CONFIG_H
+
+#define FORTEST_VERSION        "@PROJECT_VERSION@"
+#define FORTEST_PREFIX         "@CMAKE_INSTALL_PREFIX@"
+#define FORTEST_INCLUDEDIR     "@CMAKE_INSTALL_PREFIX@/include/fortest"
+#define FORTEST_MODDIR         "@CMAKE_INSTALL_PREFIX@/include/fortest/mod"
+#define FORTEST_LIBDIR         "@CMAKE_INSTALL_PREFIX@/lib"
+#define FORTEST_CMAKEPREFIX    "@CMAKE_INSTALL_PREFIX@/lib/cmake/Fortest"
+
+#endif /* FORTEST_CONFIG_H */

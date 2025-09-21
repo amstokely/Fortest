@@ -1,0 +1,58 @@
+# Build directories
+/build/
+/build-*/
+out/
+bin/
+lib/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+
+# Compiled object files
+*.o
+*.obj
+*.lo
+*.la
+*.lai
+
+# Compiled binary libraries
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug files
+*.dSYM/
+*.pch
+*.pdb
+
+# IDE/project files
+*.user
+*.swp
+*.swo
+*.swn
+*~
+.vscode/
+.idea/
+*.kate-swp
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Generated test files
+Testing/
+
+cmake-build-debug/
+

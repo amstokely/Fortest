@@ -1,0 +1,23 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/FortestTargets.cmake")
+
+# Figure out the package prefix directory (two levels up from lib/cmake/Fortest)
+get_filename_component(Fortest_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+
+# Add Fortran module include directory relative to the prefix
+set_property(TARGET Fortest::fortest APPEND PROPERTY
+    INTERFACE_INCLUDE_DIRECTORIES "${Fortest_INSTALL_PREFIX}/include/fortest/mod"
+)
+
+# Add Fortran module include directory relative to the prefix
+set_property(TARGET Fortest::fortest APPEND PROPERTY
+    INTERFACE_LINK_DIRECTORIES "${Fortest_INSTALL_PREFIX}/lib"
+)
+
+
+set_property(TARGET Fortest::fortest APPEND PROPERTY
+    INTERFACE_LINK_LIBRARIES
+    fortest
+    cpp_fortest
+)

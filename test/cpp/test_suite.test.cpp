@@ -22,7 +22,7 @@ class TestSuiteBehavior : public ::testing::Test {
 protected:
     std::ostringstream buffer;
     std::shared_ptr<OStreamLogger> logger;
-    Fortest::Assert<OStreamLogger> assert_obj;
+    Fortest::Assert<> assert_obj;
 
     void SetUp() override {
         logger = std::make_shared<OStreamLogger>(buffer);
@@ -48,7 +48,7 @@ TEST_F(TestSuiteBehavior, PassingTestReportsPass) {
     Fortest::TestSuite<OStreamLogger> ts("PassSuite", assert_obj);
 
     ts.add_test("always_pass", [&](void*, void*, void*) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
 
     ts.run(logger);
@@ -68,7 +68,7 @@ TEST_F(TestSuiteBehavior, FailingTestReportsFail) {
     Fortest::TestSuite<OStreamLogger> ts("FailSuite", assert_obj);
 
     ts.add_test("always_fail", [&](void*, void*, void*) {
-        assert_obj.assert_true(false, logger);
+        assert_obj.assert_true(false);
     });
 
     ts.run(logger);
@@ -99,7 +99,7 @@ TEST_F(TestSuiteBehavior, SuiteFixtureSetupAndTeardownCalled) {
     ts.add_fixture(suite_fixture);
 
     ts.add_test("dummy", [&](void*, void*, void*) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
 
     ts.run(logger);
@@ -119,10 +119,10 @@ TEST_F(TestSuiteBehavior, SuiteFixtureAddedAfterTestsAppliesToAllTests) {
     Fortest::TestSuite<OStreamLogger> ts("RetroFixture", assert_obj);
 
     ts.add_test("test1", [&](void*, void*, void*) {
-        assert_obj.assert_true(setup_called, logger);
+        assert_obj.assert_true(setup_called);
     });
     ts.add_test("test2", [&](void*, void*, void*) {
-        assert_obj.assert_true(setup_called, logger);
+        assert_obj.assert_true(setup_called);
     });
 
     // Add suite fixture AFTER tests are already defined

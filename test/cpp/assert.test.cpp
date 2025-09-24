@@ -34,37 +34,37 @@ protected:
 
 /// @test AssertEqual passes when two integers are the same.
 TEST_F(AssertTest, Equal_PassesWhenValuesAreSame_Int) {
-    test_assert.assert_equal(42, 42, null_logger);
+    test_assert.assert_equal(42, 42);
     expect_summary(1, 0);
 }
 
 /// @test AssertEqual fails when two integers are different.
 TEST_F(AssertTest, Equal_FailsWhenValuesDiffer_Int) {
-    test_assert.assert_equal(1, 2, null_logger);
+    test_assert.assert_equal(1, 2);
     expect_summary(0, 1);
 }
 
 /// @test AssertEqual passes when two strings are identical.
 TEST_F(AssertTest, Equal_PassesWhenValuesAreSame_String) {
-    test_assert.assert_equal(std::string("abc"), std::string("abc"), null_logger);
+    test_assert.assert_equal(std::string("abc"), std::string("abc"));
     expect_summary(1, 0);
 }
 
 /// @test AssertEqual fails when two strings differ.
 TEST_F(AssertTest, Equal_FailsWhenValuesDiffer_String) {
-    test_assert.assert_equal(std::string("abc"), std::string("def"), null_logger);
+    test_assert.assert_equal(std::string("abc"), std::string("def"));
     expect_summary(0, 1);
 }
 
 /// @test AssertNotEqual passes when two values are different.
 TEST_F(AssertTest, NotEqual_PassesWhenValuesDiffer) {
-    test_assert.assert_not_equal(1, 2, null_logger);
+    test_assert.assert_not_equal(1, 2);
     expect_summary(1, 0);
 }
 
 /// @test AssertNotEqual fails when two values are the same.
 TEST_F(AssertTest, NotEqual_FailsWhenValuesAreSame) {
-    test_assert.assert_not_equal(5, 5, null_logger);
+    test_assert.assert_not_equal(5, 5);
     expect_summary(0, 1);
 }
 
@@ -72,25 +72,25 @@ TEST_F(AssertTest, NotEqual_FailsWhenValuesAreSame) {
 
 /// @test AssertTrue passes when the condition is true.
 TEST_F(AssertTest, True_PassesOnTrueCondition) {
-    test_assert.assert_true(true, null_logger);
+    test_assert.assert_true(true);
     expect_summary(1, 0);
 }
 
 /// @test AssertTrue fails when the condition is false.
 TEST_F(AssertTest, True_FailsOnFalseCondition) {
-    test_assert.assert_true(false, null_logger);
+    test_assert.assert_true(false);
     expect_summary(0, 1);
 }
 
 /// @test AssertFalse passes when the condition is false.
 TEST_F(AssertTest, False_PassesOnFalseCondition) {
-    test_assert.assert_false(false, null_logger);
+    test_assert.assert_false(false);
     expect_summary(1, 0);
 }
 
 /// @test AssertFalse fails when the condition is true.
 TEST_F(AssertTest, False_FailsOnTrueCondition) {
-    test_assert.assert_false(true, null_logger);
+    test_assert.assert_false(true);
     expect_summary(0, 1);
 }
 
@@ -98,18 +98,18 @@ TEST_F(AssertTest, False_FailsOnTrueCondition) {
 
 /// @test Multiple assertions accumulate pass and fail counts correctly.
 TEST_F(AssertTest, MultipleAssertionsAccumulateResults) {
-    test_assert.assert_equal(1, 1, null_logger);      // pass
-    test_assert.assert_equal(1, 2, null_logger);      // fail
-    test_assert.assert_not_equal(5, 5, null_logger);  // fail
-    test_assert.assert_true(true, null_logger);       // pass
+    test_assert.assert_equal(1, 1);      // pass
+    test_assert.assert_equal(1, 2);      // fail
+    test_assert.assert_not_equal(5, 5);  // fail
+    test_assert.assert_true(true);       // pass
 
     expect_summary(2, 2);
 }
 
 /// @test Reset clears both passed and failed counters.
 TEST_F(AssertTest, ResetClearsPreviousResults) {
-    test_assert.assert_equal(1, 2, null_logger); // fail
-    test_assert.assert_true(true, null_logger);  // pass
+    test_assert.assert_equal(1, 2); // fail
+    test_assert.assert_true(true);  // pass
     expect_summary(1, 1);
 
     test_assert.reset();
@@ -118,8 +118,8 @@ TEST_F(AssertTest, ResetClearsPreviousResults) {
 
 /// @test Reset clears counters after all assertions passed.
 TEST_F(AssertTest, ResetAfterAllPasses) {
-    test_assert.assert_equal(1, 1, null_logger);
-    test_assert.assert_true(true, null_logger);
+    test_assert.assert_equal(1, 1);
+    test_assert.assert_true(true);
     expect_summary(2, 0);
 
     test_assert.reset();
@@ -128,8 +128,8 @@ TEST_F(AssertTest, ResetAfterAllPasses) {
 
 /// @test Reset clears counters after all assertions failed.
 TEST_F(AssertTest, ResetAfterAllFails) {
-    test_assert.assert_equal(1, 2, null_logger);
-    test_assert.assert_false(true, null_logger);
+    test_assert.assert_equal(1, 2);
+    test_assert.assert_false(true);
     expect_summary(0, 2);
 
     test_assert.reset();
@@ -140,25 +140,25 @@ TEST_F(AssertTest, ResetAfterAllFails) {
 
 /// @test AssertEqual treats two empty strings as equal.
 TEST_F(AssertTest, EqualHandlesEmptyStrings) {
-    test_assert.assert_equal(std::string(""), std::string(""), null_logger);
+    test_assert.assert_equal(std::string(""), std::string(""));
     expect_summary(1, 0);
 }
 
 /// @test AssertNotEqual passes when comparing empty vs non-empty string.
 TEST_F(AssertTest, NotEqualHandlesEmptyVsNonEmptyString) {
-    test_assert.assert_not_equal(std::string(""), std::string("x"), null_logger);
+    test_assert.assert_not_equal(std::string(""), std::string("x"));
     expect_summary(1, 0);
 }
 
 /// @test AssertEqual works with floating-point values.
 TEST_F(AssertTest, EqualHandlesFloatingPointValues) {
-    test_assert.assert_equal(3.14, 3.14, null_logger);
+    test_assert.assert_equal(3.14, 3.14);
     expect_summary(1, 0);
 }
 
 /// @test AssertNotEqual works with different floating-point values.
 TEST_F(AssertTest, NotEqualHandlesFloatingPointValues) {
-    test_assert.assert_not_equal(3.14, 2.71, null_logger);
+    test_assert.assert_not_equal(3.14, 2.71);
     expect_summary(1, 0);
 }
 
@@ -168,7 +168,7 @@ TEST_F(AssertTest, Equal_PassesWithinAbsoluteTolerance) {
     double b = 1.0;
     double abs_tol = 1e-5;
 
-    test_assert.assert_equal(a, b, null_logger, abs_tol, 0.0);
+    test_assert.assert_equal(a, b, abs_tol, 0.0);
     expect_summary(1, 0);
 }
 
@@ -178,7 +178,7 @@ TEST_F(AssertTest, Equal_FailsOutsideAbsoluteTolerance) {
     double b = 1.0;
     double abs_tol = 1e-3;
 
-    test_assert.assert_equal(a, b, null_logger, abs_tol, 0.0);
+    test_assert.assert_equal(a, b, abs_tol, 0.0);
     expect_summary(0, 1);
 }
 
@@ -188,7 +188,7 @@ TEST_F(AssertTest, Equal_PassesWithinRelativeTolerance) {
     double b = 1001.0;
     double rel_tol = 0.01; // within 1%
 
-    test_assert.assert_equal(a, b, null_logger, 0.0, rel_tol);
+    test_assert.assert_equal(a, b, 0.0, rel_tol);
     expect_summary(1, 0);
 }
 
@@ -198,6 +198,6 @@ TEST_F(AssertTest, Equal_FailsOutsideRelativeTolerance) {
     double b = 1050.0;
     double rel_tol = 0.01; // 1% tolerance not enough
 
-    test_assert.assert_equal(a, b, null_logger, 0.0, rel_tol);
+    test_assert.assert_equal(a, b, 0.0, rel_tol);
     expect_summary(0, 1);
 }

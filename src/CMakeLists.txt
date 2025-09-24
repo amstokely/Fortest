@@ -8,6 +8,9 @@ add_library(cpp_fortest SHARED
         test/test.hpp
         test_session/test_session.hpp
         fixture/fixture.hpp
+        preprocessor/fortran_test_preprocessor.hpp
+        preprocessor/fortran_fixture_preprocessor.hpp
+        preprocessor/fortran_fixture_extractor.hpp
 )
 
 target_include_directories(cpp_fortest
@@ -19,6 +22,7 @@ target_include_directories(cpp_fortest
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/test_session>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/utils>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fixture>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/preprocessor>
         $<INSTALL_INTERFACE:include/fortest>)
 
 add_library(c_fortest SHARED
@@ -84,6 +88,9 @@ install(FILES
         test_session/c_test_session.h
         utils/global_base.hpp
         fixture/fixture.hpp
+        preprocessor/fortran_test_preprocessor.hpp
+        preprocessor/fortran_fixture_preprocessor.hpp
+        preprocessor/fortran_fixture_extractor.hpp
         DESTINATION include/fortest
 )
 

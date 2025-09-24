@@ -73,7 +73,7 @@ namespace Fortest {
          * @param assert Assertion manager used to track results.
          */
         template <LoggerLike Logger>
-        void run(const std::shared_ptr<Logger> &logger, Assert<Logger> &assert) {
+        void run(const std::shared_ptr<Logger> &logger, Assert<AssertLogger> &assert) {
             void *test_args = nullptr;
             void *suite_args = nullptr;
             void *session_args = nullptr;

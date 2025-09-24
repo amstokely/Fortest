@@ -22,7 +22,7 @@ class TestSessionBehavior : public ::testing::Test {
 protected:
     std::ostringstream buffer;
     std::shared_ptr<OStreamLogger> logger;
-    Fortest::Assert<OStreamLogger> assert_obj;
+    Fortest::Assert<> assert_obj;
 
     void SetUp() override {
         logger = std::make_shared<OStreamLogger>(buffer);
@@ -66,7 +66,7 @@ TEST_F(TestSessionBehavior, SessionFixtureSetupAndTeardownRunOnce) {
 
     auto suite = &session.add_test_suite("Suite1");
     suite->add_test("dummy", [&](void*,void*,void*) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
 
     Fortest::Fixture<void> f(
@@ -93,10 +93,10 @@ TEST_F(TestSessionBehavior, MultipleSuitesRunAllTests) {
     auto &suite2 = session.add_test_suite("Suite2");
 
     suite1.add_test("t1", [&](void*,void*,void*) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
     suite2.add_test("t2", [&](void*,void*,void*) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
 
     session.run(logger);
@@ -143,10 +143,10 @@ TEST_F(TestSessionBehavior, GetTestStatusesFromSession) {
     auto &suite = session.add_test_suite("Suite1");
 
     suite.add_test("pass", [&](void*,void*,void*) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
     suite.add_test("fail", [&](void*,void*,void*) {
-        assert_obj.assert_true(false, logger);
+        assert_obj.assert_true(false);
     });
 
     session.run(logger);
@@ -170,10 +170,10 @@ TEST_F(TestSessionBehavior, SessionFixtureAppliesRetroactivelyToExistingTests) {
     auto &suite = session.add_test_suite("PreFixtureSuite");
     suite.add_test("test1", [&](void*, void*, void*) {
         // Should see session fixture setup has run
-        assert_obj.assert_true(setup_called, logger);
+        assert_obj.assert_true(setup_called);
     });
     suite.add_test("test2", [&](void*, void*, void*) {
-        assert_obj.assert_true(setup_called, logger);
+        assert_obj.assert_true(setup_called);
     });
 
     // Now add the session fixture

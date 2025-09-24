@@ -24,7 +24,7 @@ namespace Fortest {
         //!< Suite-level fixture
         std::shared_ptr<Fixture<void> > m_session_fixture;
         //!< Session-level fixture
-        Assert<Logger> &m_assert; //!< Assertion engine
+        Assert<AssertLogger> &m_assert; //!< Assertion engine
         std::map<std::string, Test::Status> m_statuses;
         //!< Status of each test
 
@@ -34,7 +34,7 @@ namespace Fortest {
          * @param name   Suite name.
          * @param assert Reference to the assertion manager.
          */
-        TestSuite(std::string name, Assert<Logger> &assert)
+        TestSuite(std::string name, Assert<AssertLogger> &assert)
             : m_name(std::move(name)), m_assert(assert) {
         }
 

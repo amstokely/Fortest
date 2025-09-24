@@ -38,3 +38,6 @@ add_subdirectory(cmake)
 # ------------------------------------------------------------------------------
 message(STATUS "Fortest ${PROJECT_VERSION}")
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
+
+add_executable(main main.cpp)
+target_link_libraries(main PRIVATE cpp_fortest)

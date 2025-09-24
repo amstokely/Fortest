@@ -56,3 +56,5 @@ Testing/
 
 cmake-build-debug/
 
+main.cpp
+*foo*

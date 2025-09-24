@@ -22,14 +22,14 @@ namespace Fortest {
      */
     template <LoggerLike Logger>
     class TestSession {
-        Assert<Logger> &m_assert;  //!< Assertion engine for all tests
+        Assert<AssertLogger> &m_assert;  //!< Assertion engine for all tests
         std::map<std::string,
             std::unique_ptr<TestSuite<Logger>>> m_suites; //!< Registered test suites
         std::shared_ptr<Fixture<void>> m_session_fixture; //!< Optional session-level fixture
 
     public:
         /// @brief Construct a TestSession with a reference to the assertion engine.
-        explicit TestSession(Assert<Logger> &assert) : m_assert(assert) {}
+        explicit TestSession(Assert<AssertLogger> &assert) : m_assert(assert) {}
 
         /**
          * @brief Add a new test suite to the session.

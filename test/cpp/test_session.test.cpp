@@ -196,4 +196,35 @@ TEST_F(TestSessionBehavior, SessionFixtureAppliesRetroactivelyToExistingTests) {
     EXPECT_EQ(statuses["test1"], Fortest::Test::Status::PASS);
     EXPECT_EQ(statuses["test2"], Fortest::Test::Status::PASS);
 }
+/**
+ * @brief Behavior: Getting status for a suite with no tests returns an empty map.
+ */
+TEST_F(TestSessionBehavior, GetStatusReturnsEmptyMapForSuiteWithNoTests) {
+    Fortest::TestSession<OStreamLogger> session(assert_obj);
+
+    session.add_test_suite("EmptySuite");
+    auto statuses = session.get_test_suite_status("EmptySuite");
+    EXPECT_TRUE(statuses.empty());
+}
+
+/**
+ * @brief Behavior: Getting status after adding and removing tests reflects the current state.
+ */
+TEST_F(TestSessionBehavior, GetStatusAfterAddingAndRemovingTestsReflectsCurrentState) {
+    Fortest::TestSession<OStreamLogger> session(assert_obj);
+
+    auto &suite = session.add_test_suite("DynamicSuite");
+    suite.add_test("FirstTest", [&](void*,void*,void*) {});
+    auto statuses = session.get_test_suite_status("DynamicSuite");
+    EXPECT_EQ(statuses.size(), 1);
+    EXPECT_TRUE(statuses.contains("FirstTest"));
+    EXPECT_FALSE(statuses.contains("SecondTest"));
+}
+
+TEST_F(TestSessionBehavior, GetNonexistentTestSuiteStatusThrows) {
+    Fortest::TestSession<OStreamLogger> session(assert_obj);
+
+    EXPECT_THROW(session.get_test_suite_status("TestSuite"), std::runtime_error);
+}
+
 

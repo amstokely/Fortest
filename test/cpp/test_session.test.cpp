@@ -10,10 +10,13 @@ using ::testing::HasSubstr;
 // Simple ostream logger
 class OStreamLogger : public Fortest::Logger {
 public:
-    explicit OStreamLogger(std::ostream &out) : Logger(out), out_(out) {}
-    void log(const std::string &msg, const std::string &tag) {
+    explicit OStreamLogger(std::ostream &out) : Logger(out), out_(out) {
+    }
+
+    void log(const std::string &msg, const std::string &tag, const std::optional<std::string> &border = std::nullopt) {
         out_ << "[" << tag << "] " << msg << "\n";
     }
+
 private:
     std::ostream &out_;
 };
@@ -30,7 +33,11 @@ protected:
     }
 
     std::string get_output() const { return buffer.str(); }
-    void clear_output() { buffer.str(""); buffer.clear(); }
+
+    void clear_output() {
+        buffer.str("");
+        buffer.clear();
+    }
 };
 
 /**
@@ -65,13 +72,13 @@ TEST_F(TestSessionBehavior, SessionFixtureSetupAndTeardownRunOnce) {
     Fortest::TestSession<OStreamLogger> session(assert_obj);
 
     auto suite = &session.add_test_suite("Suite1");
-    suite->add_test("dummy", [&](void*,void*,void*) {
+    suite->add_test("dummy", [&](void *, void *, void *) {
         assert_obj.assert_true(true, logger);
     });
 
     Fortest::Fixture<void> f(
-        [&](void*) { setup_called = true; },
-        [&](void*) { teardown_called = true; },
+        [&](void *) { setup_called = true; },
+        [&](void *) { teardown_called = true; },
         nullptr,
         Fortest::Scope::Session
     );
@@ -92,10 +99,10 @@ TEST_F(TestSessionBehavior, MultipleSuitesRunAllTests) {
     auto &suite1 = session.add_test_suite("Suite1");
     auto &suite2 = session.add_test_suite("Suite2");
 
-    suite1.add_test("t1", [&](void*,void*,void*) {
+    suite1.add_test("t1", [&](void *, void *, void *) {
         assert_obj.assert_true(true, logger);
     });
-    suite2.add_test("t2", [&](void*,void*,void*) {
+    suite2.add_test("t2", [&](void *, void *, void *) {
         assert_obj.assert_true(true, logger);
     });
 
@@ -142,10 +149,10 @@ TEST_F(TestSessionBehavior, GetTestStatusesFromSession) {
 
     auto &suite = session.add_test_suite("Suite1");
 
-    suite.add_test("pass", [&](void*,void*,void*) {
+    suite.add_test("pass", [&](void *, void *, void *) {
         assert_obj.assert_true(true, logger);
     });
-    suite.add_test("fail", [&](void*,void*,void*) {
+    suite.add_test("fail", [&](void *, void *, void *) {
         assert_obj.assert_true(false, logger);
     });
 
@@ -168,18 +175,18 @@ TEST_F(TestSessionBehavior, SessionFixtureAppliesRetroactivelyToExistingTests) {
 
     // Add a suite and some tests before fixture is added
     auto &suite = session.add_test_suite("PreFixtureSuite");
-    suite.add_test("test1", [&](void*, void*, void*) {
+    suite.add_test("test1", [&](void *, void *, void *) {
         // Should see session fixture setup has run
         assert_obj.assert_true(setup_called, logger);
     });
-    suite.add_test("test2", [&](void*, void*, void*) {
+    suite.add_test("test2", [&](void *, void *, void *) {
         assert_obj.assert_true(setup_called, logger);
     });
 
     // Now add the session fixture
     Fortest::Fixture<void> f(
-        [&](void*) { setup_called = true; },
-        [&](void*) { teardown_called = true; },
+        [&](void *) { setup_called = true; },
+        [&](void *) { teardown_called = true; },
         nullptr,
         Fortest::Scope::Session
     );
@@ -196,6 +203,7 @@ TEST_F(TestSessionBehavior, SessionFixtureAppliesRetroactivelyToExistingTests) {
     EXPECT_EQ(statuses["test1"], Fortest::Test::Status::PASS);
     EXPECT_EQ(statuses["test2"], Fortest::Test::Status::PASS);
 }
+
 /**
  * @brief Behavior: Getting status for a suite with no tests returns an empty map.
  */
@@ -214,7 +222,8 @@ TEST_F(TestSessionBehavior, GetStatusAfterAddingAndRemovingTestsReflectsCurrentS
     Fortest::TestSession<OStreamLogger> session(assert_obj);
 
     auto &suite = session.add_test_suite("DynamicSuite");
-    suite.add_test("FirstTest", [&](void*,void*,void*) {});
+    suite.add_test("FirstTest", [&](void *, void *, void *) {
+    });
     auto statuses = session.get_test_suite_status("DynamicSuite");
     EXPECT_EQ(statuses.size(), 1);
     EXPECT_TRUE(statuses.contains("FirstTest"));
@@ -226,5 +235,3 @@ TEST_F(TestSessionBehavior, GetNonexistentTestSuiteStatusThrows) {
 
     EXPECT_THROW(session.get_test_suite_status("TestSuite"), std::runtime_error);
 }
-
-

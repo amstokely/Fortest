@@ -11,7 +11,7 @@ using ::testing::HasSubstr;
 class OStreamLogger : public Fortest::Logger {
 public:
     explicit OStreamLogger(std::ostream &out) : Logger(out), out_(out) {}
-    void log(const std::string &msg, const std::string &tag) {
+    void log(const std::string &msg, const std::string &tag, const std::optional<std::string> &border=std::nullopt) {
         out_ << "[" << tag << "] " << msg << "\n";
     }
 private:

@@ -113,7 +113,9 @@ namespace Fortest {
             }
 
             for (auto &[test_name, test]: m_tests) {
-                logger->log("Running test: " + test_name, "INFO");
+                std::string border = "\n";
+                border += std::string(40, '=');
+                logger->log("Running test: " + test_name, "INFO", border);
                 test.run(logger, m_assert);
                 m_statuses[test_name] = test.get_status();
 

@@ -6,90 +6,103 @@
 #include <ostream>
 #include <string>
 #include <utility>
+#include <optional>
 
 namespace Fortest {
-    /// @brief Concept that defines the minimal Logger interface.
-    ///
-    /// A type satisfies LoggerLike if it provides:
-    /// ```
-    /// void log(const std::string &msg, const std::string &tag);
-    /// ```
+    /**
+     * @brief Concept to define a Logger-like interface.
+     *
+     * A type satisfies the LoggerLike concept if it provides a `log` method
+     * that accepts a message and a tag, and returns void.
+     *
+     * @tparam T The type to be checked against the LoggerLike concept.
+     */
     template<typename T>
     concept LoggerLike = requires(
-        T logger, const std::string &msg, const std::string &tag
+        T logger, const std::string &msg, const std::string &tag,
+        const std::optional<std::string> &border
     )
-    {
-        { logger.log(msg, tag) } -> std::same_as<void>;
-    };
+            {
+                { logger.log(msg, tag, border) } -> std::same_as<void>;
+            };
 
-    /// @brief Default logger implementation that writes formatted,
-    /// color-coded output to an ostream.
-    ///
-    /// The logger stores the last log message and tag, supports
-    /// ANSI color output, and can optionally draw borders around
-    /// log messages. Used by the framework to provide consistent
-    /// reporting of test results and status messages.
+    /**
+     * @brief A class for logging messages with optional formatting and colors.
+     *
+     * The Logger class provides functionality to log messages with different
+     * tags (e.g., PASS, FAIL, INFO) and optional borders. It supports color
+     * formatting for terminal output.
+     */
     class Logger {
     public:
-        /// @brief Supported colors for console output.
+        /**
+         * @brief Enum representing available text colors for logging.
+         */
         enum class Color {
-            DEFAULT, ///< No color / reset to default.
-            RED,     ///< Red text (failures, false).
-            GREEN,   ///< Green text (success, true).
-            YELLOW,  ///< Yellow text.
-            BLUE,    ///< Blue text.
-            MAGENTA, ///< Magenta text.
-            CYAN,    ///< Cyan text.
-            WHITE    ///< White text.
+            DEFAULT, /**< Default terminal color. */
+            RED, /**< Red color. */
+            GREEN, /**< Green color. */
+            YELLOW, /**< Yellow color. */
+            BLUE, /**< Blue color. */
+            MAGENTA, /**< Magenta color. */
+            CYAN, /**< Cyan color. */
+            WHITE /**< White color. */
         };
 
-        /// @brief Construct a Logger.
-        ///
-        /// @param out Stream to write log output (default: std::cout).
-        /// @param border Optional border string printed above/below messages.
-        /// @param color Initial text color (default: Color::DEFAULT).
+        /**
+         * @brief Constructs a Logger instance.
+         *
+         * @param m_out The output stream to log messages to (default: std::cout).
+         * @param m_border An optional border string to surround log messages.
+         * @param m_color The default color for log messages (default: Color::DEFAULT).
+         */
         explicit Logger(
-            std::ostream &out = std::cout,
-            std::string border = "",
-            Color color = Color::DEFAULT
+            std::ostream &m_out = std::cout,
+            std::string m_border = "",
+            Color m_color = Color::DEFAULT
         )
-            : out_(out), border_(std::move(border)), color_(color) {
+            : m_out(m_out), m_border(std::move(m_border)), m_color(m_color) {
         }
 
-        /// @brief Log a message with a tag.
-        ///
-        /// Special handling for recognized tags:
-        /// - "PASS" → green
-        /// - "FAIL" → red
-        /// - "INFO" → default color
-        /// - "TRUE" → green
-        /// - "FALSE" → red
-        ///
-        /// Other tags print the message as plain text.
-        /// @param msg The message string.
-        /// @param tag The message tag.
-        void log(const std::string &msg, const std::string &tag) {
-            last_msg_ = msg;
-            last_tag_ = tag;
+        /**
+         * @brief Logs a message with a specific tag and optional border.
+         *
+         * Depending on the tag, the message is formatted with a specific color.
+         * Supported tags include PASS, FAIL, INFO, TRUE, and FALSE.
+         *
+         * @param msg The message to log.
+         * @param tag The tag associated with the message.
+         * @param border An optional border string to override the default border.
+         */
+        void log(
+            const std::string &msg,
+            const std::string &tag,
+            const std::optional<std::string> &border = std::nullopt
+        ) {
+            m_last_msg = msg;
+            m_last_tag = tag;
 
             if (tag == "PASS") {
-                log_with_format("PASS", msg, Color::GREEN);
+                log_with_format("PASS", msg, Color::GREEN, border);
             } else if (tag == "FAIL") {
-                log_with_format("FAIL", msg, Color::RED);
+                log_with_format("FAIL", msg, Color::RED, border);
             } else if (tag == "INFO") {
-                log_with_format("INFO", msg, Color::DEFAULT);
+                log_with_format("INFO", msg, Color::DEFAULT, border);
             } else if (tag == "TRUE") {
-                log_with_format("TRUE", msg, Color::GREEN);
+                log_with_format("TRUE", msg, Color::GREEN, border);
             } else if (tag == "FALSE") {
-                log_with_format("FALSE", msg, Color::RED);
+                log_with_format("FALSE", msg, Color::RED, border);
             } else {
-                out_ << msg << '\n';
+                m_out << msg << '\n';
             }
         }
 
-        /// @brief Convert a color enum to an ANSI escape code.
-        /// @param c The color.
-        /// @return Corresponding ANSI escape code string.
+        /**
+         * @brief Converts a Color enum value to its corresponding ANSI escape code.
+         *
+         * @param c The Color enum value.
+         * @return The ANSI escape code as a string.
+         */
         static std::string color_to_code(Color c) {
             switch (c) {
                 case Color::RED: return "\033[31m";
@@ -103,16 +116,18 @@ namespace Fortest {
             }
         }
 
-        /// @brief Stream insertion operator.
-        ///
-        /// Prints the last logged message and tag in the form:
-        /// ```
-        /// [TAG] message
-        /// ```
-        /// If no log has been recorded yet, prints `(no log yet)`.
+        /**
+         * @brief Outputs the last logged message and tag to a stream.
+         *
+         * If no message has been logged, outputs "(no log yet)".
+         *
+         * @param os The output stream.
+         * @param logger The Logger instance.
+         * @return The output stream with the logged message.
+         */
         friend std::ostream &operator<<(std::ostream &os, const Logger &logger) {
-            if (!logger.last_tag_.empty()) {
-                os << "[" << logger.last_tag_ << "] " << logger.last_msg_;
+            if (!logger.m_last_tag.empty()) {
+                os << "[" << logger.m_last_tag << "] " << logger.m_last_msg;
             } else {
                 os << "(no log yet)";
             }
@@ -120,34 +135,41 @@ namespace Fortest {
         }
 
     private:
-        std::ostream &out_;   ///< Output stream reference.
-        std::string border_;  ///< Optional border string.
-        Color color_;         ///< Current color for logging.
+        std::ostream &m_out; /**< The output stream for logging. */
+        std::string m_border; /**< The default border string for log messages. */
+        Color m_color; /**< The current color for log messages. */
 
-        std::string last_msg_; ///< Last logged message.
-        std::string last_tag_; ///< Last logged tag.
+        std::string m_last_msg; /**< The last logged message. */
+        std::string m_last_tag; /**< The tag associated with the last logged message. */
 
-        /// @brief Internal helper for formatted log output.
-        ///
-        /// Wraps the message with color codes and optional borders.
-        /// @param label Tag label (PASS/FAIL/etc.).
-        /// @param msg Log message.
-        /// @param color Text color to apply.
+        /**
+         * @brief Logs a message with a specific format and color.
+         *
+         * @param label The label to display (e.g., PASS, FAIL).
+         * @param msg The message to log.
+         * @param color The color to use for the message.
+         * @param border_override An optional border string to override the default border.
+         */
         void log_with_format(
             const std::string &label,
             const std::string &msg,
-            Color color
+            Color color,
+            const std::optional<std::string> &border_override
         ) {
-            color_ = color;
-            std::string color_code = color_to_code(color_);
+            m_color = color;
+            std::string color_code = color_to_code(m_color);
             std::string reset_code = "\033[0m";
 
-            if (!border_.empty()) {
-                out_ << color_code << border_ << reset_code << '\n';
+            // pick effective border
+            const std::string &effective_border =
+                    border_override.has_value() ? *border_override : m_border;
+
+            if (!effective_border.empty()) {
+                m_out << color_code << effective_border << reset_code << '\n';
             }
-            out_ << color_code << "[" << label << "] " << msg << reset_code << '\n';
-            if (!border_.empty()) {
-                out_ << color_code << border_ << reset_code << '\n';
+            m_out << color_code << "[" << label << "] " << msg << reset_code << '\n';
+            if (!effective_border.empty() && !m_border.empty() ) {
+                m_out << color_code << reset_code << '\n';
             }
         }
     };

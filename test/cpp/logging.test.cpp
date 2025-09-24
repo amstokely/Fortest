@@ -251,3 +251,45 @@ TEST(ConsoleLoggerColorTest, ColorToCodeReturnsCorrectEscapeCodes) {
     EXPECT_EQ(Fortest::Logger::color_to_code(Fortest::Logger::Color::WHITE),   "\033[37m");
     EXPECT_EQ(Fortest::Logger::color_to_code(Fortest::Logger::Color::DEFAULT), "\033[0m");
 }
+
+// -----------------------------------------------------------------------------
+// Optional border behavior
+// -----------------------------------------------------------------------------
+
+/**
+ * @test Behavior: Border override takes precedence over member border.
+ */
+TEST_F(ConsoleLoggerTest, BorderOverrideTakesPrecedence) {
+    Fortest::Logger border_logger(buffer, "====");
+    border_logger.log("with override", "INFO", "****");
+
+    std::string out = get_output();
+    EXPECT_THAT(out, HasSubstr("****"));
+    EXPECT_THAT(out, Not(HasSubstr("===="))); // internal border not used
+    EXPECT_THAT(out, HasSubstr("[INFO] with override"));
+}
+
+/**
+ * @test Behavior: No override uses internal border.
+ */
+TEST_F(ConsoleLoggerTest, NoOverrideUsesInternalBorder) {
+    Fortest::Logger border_logger(buffer, "++++");
+    border_logger.log("no override", "INFO");
+
+    std::string out = get_output();
+    EXPECT_THAT(out, HasSubstr("++++"));
+    EXPECT_THAT(out, HasSubstr("[INFO] no override"));
+}
+
+/**
+ * @test Behavior: Empty string override suppresses border entirely.
+ */
+TEST_F(ConsoleLoggerTest, EmptyStringOverrideSuppressesBorder) {
+    Fortest::Logger border_logger(buffer, "====");
+    border_logger.log("suppress border", "INFO", std::string{});
+
+    std::string out = get_output();
+    EXPECT_THAT(out, Not(HasSubstr("===="))); // internal border ignored
+    EXPECT_THAT(out, HasSubstr("[INFO] suppress border"));
+}
+

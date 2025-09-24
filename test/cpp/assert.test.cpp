@@ -8,7 +8,7 @@
 // Null logger that satisfies LoggerLike but discards output
 class NullLogger {
 public:
-    static void log(const std::string &, const std::string &) {}
+    static void log(const std::string &, const std::string &, const std::optional<std::string> &) {}
 };
 
 using TestAssert = Fortest::Assert<NullLogger>;

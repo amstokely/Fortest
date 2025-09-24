@@ -1,4 +1,7 @@
 # Fortest – A Fortran Test Framework
+# Fortest
+
+[![codecov](https://codecov.io/gh/andystokely/fortest/branch/main/graph/badge.svg)](https://codecov.io/gh/andystokely/fortest)
 
 **Fortest** is a lightweight unit testing framework designed specifically for Fortran.
 Its purpose is to make writing tests straightforward, lowering the barrier for developers who want to improve the reliability of their code.

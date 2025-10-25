@@ -2,7 +2,7 @@ module procedure_interfaces_mod
     use iso_c_binding
     implicit none
     private
-    public :: test_proc, fixture_proc
+    public :: test_proc, fixture_proc, param_test_proc
 
     !> @brief Abstract interface for a test procedure.
     !!
@@ -20,6 +20,25 @@ module procedure_interfaces_mod
             type(c_ptr), value :: t_ptr, ts_ptr, s_ptr
         end subroutine test_proc
     end interface
+
+    !> @brief Abstract interface for a parameterized test procedure.
+    !!
+    !! A parameterized test procedure is a subroutine with three C pointer
+    !! arguments and one integer index:
+    !! - t_ptr  : pointer to the test instance
+    !! - ts_ptr : pointer to the test suite
+    !! - s_ptr  : pointer to the test session
+    !! - idx    : integer parameter index for selecting values
+    !!
+    !! This allows the same test logic to run across multiple parameter values.
+    abstract interface
+        subroutine param_test_proc(t_ptr, ts_ptr, s_ptr, idx)
+            import :: c_ptr, c_int
+            type(c_ptr), value :: t_ptr, ts_ptr, s_ptr
+            integer(c_int), value :: idx
+        end subroutine param_test_proc
+    end interface
+
 
     !> @brief Abstract interface for a fixture procedure.
     !!

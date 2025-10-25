@@ -16,7 +16,8 @@ class TestFixture : public ::testing::Test {
 protected:
     std::ostringstream buffer;
     std::shared_ptr<OStreamLogger> logger;
-    Fortest::Assert<OStreamLogger> assert_obj; // for Test
+    Fortest::Assert<OStreamLogger> assert_obj{static_cast<std::ostream&>(buffer)};
+
 
     void SetUp() override {
         logger = std::make_shared<OStreamLogger>(buffer);
@@ -104,10 +105,10 @@ TEST_F(TestFixture, RunWithoutFixtures) {
  */
 TEST_F(TestFixture, GetTestStatusReflectsAssertions) {
     Fortest::Test passing_test("pass", [&](void *, void *, void *) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
     Fortest::Test failing_test("fail", [&](void *, void *, void *) {
-        assert_obj.assert_true(false, logger);
+        assert_obj.assert_true(false);
     });
 
     passing_test.run(logger, assert_obj);

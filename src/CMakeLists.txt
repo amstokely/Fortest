@@ -5,7 +5,9 @@ add_library(cpp_fortest SHARED
         test_suite/test_suite.cpp
         assert/assert.cpp
         logging/logging.cpp
+        logging/assert_logger.hpp
         test/test.hpp
+        test/parameterized_test.hpp
         test_session/test_session.hpp
         fixture/fixture.hpp
 )
@@ -78,8 +80,10 @@ install(FILES
         assert/g_assert.hpp
         logging/logging.hpp
         logging/g_logging.hpp
+        logging/assert_logger.hpp
         test_suite/test_suite.hpp
         test/test.hpp
+        test/parameterized_test.hpp
         test_session/test_session.hpp
         test_session/c_test_session.h
         utils/global_base.hpp

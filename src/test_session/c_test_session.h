@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <cstdlib>
+#include <vector>
 #include "g_assert.hpp"
 #include "g_logging.hpp"
 #include "g_test_session.hpp"
@@ -91,6 +92,31 @@ void c_register_test(
 }
 
 /**
+ * @brief Register a parameterized test with the given suite.
+ *
+ * @param suite_name  Suite name
+ * @param test_name   Test name
+ * @param test_ptr    Function pointer: void(*)(void*, void*, void*, int)
+ * @param params      Pointer to array of parameter indices
+ * @param nparams     Number of parameter indices
+ */
+void c_register_parameterized_test(
+    const char *suite_name, const char *test_name,
+    void *test_ptr, const int *params, int nparams
+) {
+    try {
+        auto test = reinterpret_cast<void(*)(void *, void *, void *, int)>(test_ptr);
+        std::vector<int> param_vec(params, params + nparams);
+
+        Fortest::GlobalTestSession::instance().add_parameterized_test(
+            suite_name, test_name, test, std::move(param_vec)
+        );
+    } catch (...) {
+        fortest_fatal_terminate("c_register_parameterized_test");
+    }
+}
+
+/**
  * @brief Run all registered tests in the global session.
  */
 void c_run_test_session() {
@@ -104,6 +130,7 @@ void c_run_test_session() {
 
 /**
  * @brief Get the overall status of a test suite.
+ * @return 0 if all pass, 1 if any fail
  */
 int c_get_test_suite_status(const char *name) {
     try {

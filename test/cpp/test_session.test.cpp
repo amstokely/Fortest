@@ -25,7 +25,8 @@ class TestSessionBehavior : public ::testing::Test {
 protected:
     std::ostringstream buffer;
     std::shared_ptr<OStreamLogger> logger;
-    Fortest::Assert<OStreamLogger> assert_obj;
+    Fortest::Assert<OStreamLogger> assert_obj{static_cast<std::ostream&>(buffer)};
+
 
     void SetUp() override {
         logger = std::make_shared<OStreamLogger>(buffer);
@@ -73,7 +74,7 @@ TEST_F(TestSessionBehavior, SessionFixtureSetupAndTeardownRunOnce) {
 
     auto suite = &session.add_test_suite("Suite1");
     suite->add_test("dummy", [&](void *, void *, void *) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
 
     Fortest::Fixture<void> f(
@@ -100,10 +101,10 @@ TEST_F(TestSessionBehavior, MultipleSuitesRunAllTests) {
     auto &suite2 = session.add_test_suite("Suite2");
 
     suite1.add_test("t1", [&](void *, void *, void *) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
     suite2.add_test("t2", [&](void *, void *, void *) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
 
     session.run(logger);
@@ -150,10 +151,10 @@ TEST_F(TestSessionBehavior, GetTestStatusesFromSession) {
     auto &suite = session.add_test_suite("Suite1");
 
     suite.add_test("pass", [&](void *, void *, void *) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
     suite.add_test("fail", [&](void *, void *, void *) {
-        assert_obj.assert_true(false, logger);
+        assert_obj.assert_true(false);
     });
 
     session.run(logger);
@@ -177,10 +178,10 @@ TEST_F(TestSessionBehavior, SessionFixtureAppliesRetroactivelyToExistingTests) {
     auto &suite = session.add_test_suite("PreFixtureSuite");
     suite.add_test("test1", [&](void *, void *, void *) {
         // Should see session fixture setup has run
-        assert_obj.assert_true(setup_called, logger);
+        assert_obj.assert_true(setup_called);
     });
     suite.add_test("test2", [&](void *, void *, void *) {
-        assert_obj.assert_true(setup_called, logger);
+        assert_obj.assert_true(setup_called);
     });
 
     // Now add the session fixture
@@ -235,3 +236,95 @@ TEST_F(TestSessionBehavior, GetNonexistentTestSuiteStatusThrows) {
 
     EXPECT_THROW(session.get_test_suite_status("TestSuite"), std::runtime_error);
 }
+
+/**
+ * @brief Behavior: Adding a parameterized test to a non-existent suite throws.
+ */
+TEST_F(TestSessionBehavior, AddParameterizedTestToUnknownSuiteThrows) {
+    Fortest::TestSession<OStreamLogger> session(assert_obj);
+
+    EXPECT_THROW(
+        session.add_parameterized_test("NoSuchSuite", "param_test",
+            [&](void*, void*, void*, int) {}, {0,1}),
+        std::runtime_error
+    );
+}
+
+/**
+ * @brief Behavior: A parameterized test with mixed pass/fail reports FAIL status.
+ */
+TEST_F(TestSessionBehavior, ParameterizedTestReportsFailIfAnyCaseFails) {
+    Fortest::TestSession<OStreamLogger> session(assert_obj);
+
+    auto &suite = session.add_test_suite("ParamSuite");
+    session.add_parameterized_test("ParamSuite", "parity_test",
+        [&](void*, void*, void*, int idx) {
+            assert_obj.assert_true(idx % 2 == 0); // fail for odd indices
+        },
+        {0, 1, 2}
+    );
+
+    session.run(logger);
+
+    auto statuses = session.get_test_suite_status("ParamSuite");
+    EXPECT_EQ(statuses["parity_test"], Fortest::Test::Status::FAIL);
+
+    std::string out = get_output();
+    EXPECT_THAT(out, HasSubstr("Running parameterized test: parity_test"));
+    EXPECT_THAT(out, HasSubstr("Parameterized test failed: parity_test"));
+}
+
+/**
+ * @brief Behavior: A parameterized test with all passing cases reports PASS.
+ */
+TEST_F(TestSessionBehavior, ParameterizedTestAllPassReportsPass) {
+    Fortest::TestSession<OStreamLogger> session(assert_obj);
+
+    auto &suite = session.add_test_suite("ParamPassSuite");
+    session.add_parameterized_test("ParamPassSuite", "always_pass",
+        [&](void*, void*, void*, int) { assert_obj.assert_true(true); },
+        {0, 1}
+    );
+
+    session.run(logger);
+
+    auto statuses = session.get_test_suite_status("ParamPassSuite");
+    EXPECT_EQ(statuses["always_pass"], Fortest::Test::Status::PASS);
+
+    std::string out = get_output();
+    EXPECT_THAT(out, HasSubstr("Running parameterized test: always_pass"));
+    EXPECT_THAT(out, HasSubstr("Parameterized test passed: always_pass"));
+}
+
+/**
+ * @brief Behavior: Session-level fixtures are applied to parameterized tests.
+ */
+TEST_F(TestSessionBehavior, SessionFixtureAppliesToParameterizedTests) {
+    bool fixture_called = false;
+
+    Fortest::TestSession<OStreamLogger> session(assert_obj);
+    auto &suite = session.add_test_suite("ParamFixtureSuite");
+
+    Fortest::Fixture<void> session_fixture(
+        [&](void*) { fixture_called = true; },
+        nullptr,
+        nullptr,
+        Fortest::Scope::Session
+    );
+    session.add_fixture(session_fixture);
+
+    session.add_parameterized_test("ParamFixtureSuite", "uses_fixture",
+        [&](void*, void*, void*, int) {
+            assert_obj.assert_true(fixture_called);
+        },
+        {0}
+    );
+
+    session.run(logger);
+
+    EXPECT_TRUE(fixture_called);
+
+    auto statuses = session.get_test_suite_status("ParamFixtureSuite");
+    EXPECT_EQ(statuses["uses_fixture"], Fortest::Test::Status::PASS);
+}
+

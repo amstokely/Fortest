@@ -21,6 +21,18 @@ contains
         call assert_equal(result, 5)
     end subroutine test_assert_equal_int
 
+    !> @test Verify that .true. = .true. and .false = .false (logical equality).
+    subroutine test_assert_equal_logical(t_ptr, ts_ptr, s_ptr)
+        type(c_ptr), value :: t_ptr, ts_ptr, s_ptr
+        logical :: val1, val2
+        val1 = .true.
+        val2 = .true.
+        call assert_equal(val1, val2)
+        val1 = .false.
+        val2 = .false.
+        call assert_equal(val1, val2)
+    end subroutine test_assert_equal_logical
+
     !> @test Verify that 1.5 × 2.5 = 3.75 (real equality).
     subroutine test_assert_equal_float(t_ptr, ts_ptr, s_ptr)
         type(c_ptr), value :: t_ptr, ts_ptr, s_ptr
@@ -95,6 +107,15 @@ contains
         result = a + b
         call assert_not_equal(result, 4)
     end subroutine test_assert_not_equal_int
+
+    !> @test Verify .true. ≠ .false. (logical inequality).
+    subroutine test_assert_not_equal_logical(t_ptr, ts_ptr, s_ptr)
+        type(c_ptr), value :: t_ptr, ts_ptr, s_ptr
+        logical :: val1, val2
+        val1 = .true.
+        val2 = .false.
+        call assert_not_equal(val1, val2)
+    end subroutine test_assert_not_equal_logical
 
     !> @test Verify that 1.5 × 2.5 = 3.75 ≠ 4.0 (real inequality).
     subroutine test_assert_not_equal_float(t_ptr, ts_ptr, s_ptr)

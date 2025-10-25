@@ -38,3 +38,11 @@ set_target_properties(
 target_link_libraries(test_fortest_fixtures_fortran PRIVATE fortest)
 add_test(NAME test_fortest_fixtures_fortran COMMAND test_fortest_fixtures_fortran)
 
+add_executable(test_fortest_parameterized_tests_fortran fortest_parameterized_tests.test.f90)
+set_target_properties(
+        test_fortest_parameterized_tests_fortran PROPERTIES
+        LINKER_LANGUAGE Fortran
+)
+target_link_libraries(test_fortest_parameterized_tests_fortran PRIVATE fortest)
+add_test(NAME test_fortest_parameterized_tests_fortran COMMAND test_fortest_parameterized_tests_fortran)
+

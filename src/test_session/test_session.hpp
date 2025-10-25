@@ -9,7 +9,6 @@
 #include "fixture.hpp"
 
 namespace Fortest {
-
     /**
      * @brief Represents a session of test suites.
      *
@@ -18,18 +17,18 @@ namespace Fortest {
      * optional session-level fixtures, and coordinates running all
      * registered tests with a provided logger and assertion engine.
      *
-     * @tparam Logger A logger type satisfying LoggerLike.
+     * @tparam TestLoggerType A logger type satisfying LoggerLike.
      */
-    template <LoggerLike Logger>
+    template<LoggerLike TestLoggerType = Logger, LoggerLike AssertLoggerType = TestLoggerType>
     class TestSession {
-        Assert<Logger> &m_assert;  //!< Assertion engine for all tests
+        Assert<AssertLoggerType> &m_assert; //!< Assertion engine for all tests
         std::map<std::string,
-            std::unique_ptr<TestSuite<Logger>>> m_suites; //!< Registered test suites
+            std::unique_ptr<TestSuite<TestLoggerType, AssertLoggerType>>> m_suites; //!< Registered test suites
         std::shared_ptr<Fixture<void>> m_session_fixture; //!< Optional session-level fixture
 
     public:
         /// @brief Construct a TestSession with a reference to the assertion engine.
-        explicit TestSession(Assert<Logger> &assert) : m_assert(assert) {}
+        explicit TestSession(Assert<AssertLoggerType> &assert) : m_assert(assert) {}
 
         /**
          * @brief Add a new test suite to the session.
@@ -37,14 +36,14 @@ namespace Fortest {
          * @throws std::runtime_error if a suite with the same name already exists.
          * @return Reference to the created TestSuite.
          */
-        TestSuite<Logger> &add_test_suite(const std::string &name) {
+        TestSuite<TestLoggerType, AssertLoggerType> &add_test_suite(const std::string &name) {
             if (m_suites.find(name) != m_suites.end()) {
                 throw std::runtime_error(
                     "Test suite with name '" + name +
                     "' already exists in session."
                 );
             }
-            auto suite = std::make_unique<TestSuite<Logger>>(name, m_assert);
+            auto suite = std::make_unique<TestSuite<TestLoggerType, AssertLoggerType>>(name, m_assert);
             auto &ref = *suite;
             m_suites[name] = std::move(suite);
             if (m_session_fixture) {
@@ -121,10 +120,34 @@ namespace Fortest {
         }
 
         /**
+         * @brief Add a parameterized test to a suite.
+         * @param suite_name Name of the suite.
+         * @param test_name Name of the test.
+         * @param func Parameterized test function.
+         * @param params Vector of parameter indices.
+         * @throws std::runtime_error if suite does not exist.
+         */
+        void add_parameterized_test(
+            const std::string &suite_name,
+            const std::string &test_name,
+            ParameterizedTestFunction func,
+            std::vector<int> params
+        ) {
+            auto it = m_suites.find(suite_name);
+            if (it == m_suites.end()) {
+                throw std::runtime_error(
+                    "Suite '" + suite_name +
+                    "' does not exist in session."
+                );
+            }
+            it->second->register_parameterized_test(test_name, std::move(func), std::move(params));
+        }
+
+        /**
          * @brief Run all test suites in the session.
          * @param logger Shared pointer to logger.
          */
-        void run(const std::shared_ptr<Logger> &logger) {
+        void run(const std::shared_ptr<TestLoggerType> &logger) {
             logger->log("Starting test session: ", "INFO");
 
             if (m_session_fixture) {
@@ -173,7 +196,6 @@ namespace Fortest {
             return it->second->get_statuses();
         }
     };
-
 } // namespace Fortest
 
 #endif // FORTEST_TEST_SESSION_HPP

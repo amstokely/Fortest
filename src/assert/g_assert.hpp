@@ -13,11 +13,11 @@ namespace Fortest {
     /// without needing to pass it explicitly. Inherits from
     /// both `Assert<Logger>` for assertion functionality and
     /// `SingletonBase` to enforce a single global instance.
-    class GlobalAssert : public Assert<Logger>,
-                         public SingletonBase<Assert<Logger>> {
+    class GlobalAssert : public Assert<AssertLogger>,
+                         public SingletonBase<Assert<AssertLogger>> {
     private:
         /// @brief Allow SingletonBase to construct the instance.
-        friend class SingletonBase<Assert<Logger>>;
+        friend class SingletonBase<Assert<AssertLogger>>;
 
         /// @brief Hidden constructor for singleton use only.
         GlobalAssert() = default;

@@ -11,7 +11,8 @@ using ::testing::HasSubstr;
 class OStreamLogger : public Fortest::Logger {
 public:
     explicit OStreamLogger(std::ostream &out) : Logger(out), out_(out) {}
-    void log(const std::string &msg, const std::string &tag, const std::optional<std::string> &border=std::nullopt) {
+    void log(const std::string &msg, const std::string &tag,
+             const std::optional<std::string> &border = std::nullopt) {
         out_ << "[" << tag << "] " << msg << "\n";
     }
 private:
@@ -22,7 +23,7 @@ class TestSuiteBehavior : public ::testing::Test {
 protected:
     std::ostringstream buffer;
     std::shared_ptr<OStreamLogger> logger;
-    Fortest::Assert<OStreamLogger> assert_obj;
+    Fortest::Assert<OStreamLogger> assert_obj{static_cast<std::ostream&>(buffer)};
 
     void SetUp() override {
         logger = std::make_shared<OStreamLogger>(buffer);
@@ -48,7 +49,7 @@ TEST_F(TestSuiteBehavior, PassingTestReportsPass) {
     Fortest::TestSuite<OStreamLogger> ts("PassSuite", assert_obj);
 
     ts.add_test("always_pass", [&](void*, void*, void*) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
 
     ts.run(logger);
@@ -68,7 +69,7 @@ TEST_F(TestSuiteBehavior, FailingTestReportsFail) {
     Fortest::TestSuite<OStreamLogger> ts("FailSuite", assert_obj);
 
     ts.add_test("always_fail", [&](void*, void*, void*) {
-        assert_obj.assert_true(false, logger);
+        assert_obj.assert_true(false);
     });
 
     ts.run(logger);
@@ -99,7 +100,7 @@ TEST_F(TestSuiteBehavior, SuiteFixtureSetupAndTeardownCalled) {
     ts.add_fixture(suite_fixture);
 
     ts.add_test("dummy", [&](void*, void*, void*) {
-        assert_obj.assert_true(true, logger);
+        assert_obj.assert_true(true);
     });
 
     ts.run(logger);
@@ -119,10 +120,10 @@ TEST_F(TestSuiteBehavior, SuiteFixtureAddedAfterTestsAppliesToAllTests) {
     Fortest::TestSuite<OStreamLogger> ts("RetroFixture", assert_obj);
 
     ts.add_test("test1", [&](void*, void*, void*) {
-        assert_obj.assert_true(setup_called, logger);
+        assert_obj.assert_true(setup_called);
     });
     ts.add_test("test2", [&](void*, void*, void*) {
-        assert_obj.assert_true(setup_called, logger);
+        assert_obj.assert_true(setup_called);
     });
 
     // Add suite fixture AFTER tests are already defined
@@ -142,4 +143,76 @@ TEST_F(TestSuiteBehavior, SuiteFixtureAddedAfterTestsAppliesToAllTests) {
     auto statuses = ts.get_statuses();
     EXPECT_EQ(statuses.at("test1"), Fortest::Test::Status::PASS);
     EXPECT_EQ(statuses.at("test2"), Fortest::Test::Status::PASS);
+}
+
+/**
+ * @brief Behavior: Adding and running a parameterized test records status for all indices.
+ */
+TEST_F(TestSuiteBehavior, ParameterizedTestReportsStatuses) {
+    Fortest::TestSuite<OStreamLogger> ts("ParamSuite", assert_obj);
+
+    ts.register_parameterized_test("parity_test",
+        [&](void*, void*, void*, int idx) {
+            assert_obj.assert_true(idx % 2 == 0); // pass for even, fail for odd
+        },
+        {0, 1, 2}
+    );
+
+    ts.run(logger);
+
+    auto statuses = ts.get_statuses();
+    EXPECT_EQ(statuses.at("parity_test"), Fortest::Test::Status::FAIL); // because idx=1 fails
+}
+
+/**
+ * @brief Behavior: A parameterized test that passes all cases reports PASS.
+ */
+TEST_F(TestSuiteBehavior, ParameterizedTestAllPass) {
+    Fortest::TestSuite<OStreamLogger> ts("ParamPassSuite", assert_obj);
+
+    ts.register_parameterized_test("all_pass",
+        [&](void*, void*, void*, int) {
+            assert_obj.assert_true(true);
+        },
+        {0, 1}
+    );
+
+    ts.run(logger);
+
+    auto statuses = ts.get_statuses();
+    EXPECT_EQ(statuses.at("all_pass"), Fortest::Test::Status::PASS);
+
+    std::string out = get_output();
+    EXPECT_THAT(out, HasSubstr("Running parameterized test: all_pass"));
+    EXPECT_THAT(out, HasSubstr("Parameterized test passed: all_pass"));
+}
+
+/**
+ * @brief Behavior: Parameterized tests inherit suite fixtures just like regular tests.
+ */
+TEST_F(TestSuiteBehavior, ParameterizedTestInheritsSuiteFixture) {
+    bool setup_called = false;
+
+    Fortest::TestSuite<OStreamLogger> ts("ParamFixtureSuite", assert_obj);
+
+    Fortest::Fixture<void> suite_fixture(
+        [&](void*) { setup_called = true; },
+        nullptr,
+        nullptr,
+        Fortest::Scope::Suite
+    );
+    ts.add_fixture(suite_fixture);
+
+    ts.register_parameterized_test("fixture_check",
+        [&](void*, void*, void*, int) {
+            assert_obj.assert_true(setup_called);
+        },
+        {0}
+    );
+
+    ts.run(logger);
+
+    EXPECT_TRUE(setup_called);
+    auto statuses = ts.get_statuses();
+    EXPECT_EQ(statuses.at("fixture_check"), Fortest::Test::Status::PASS);
 }

@@ -23,7 +23,7 @@ namespace Fortest {
         /// returned by reference on subsequent calls.
         ///
         /// @return Reference to the global `TestSession<Logger>`.
-        static TestSession<Logger> &instance() {
+        static TestSession<Logger, AssertLogger> &instance() {
             static TestSession session(*GlobalAssert::instance());
             return session;
         }

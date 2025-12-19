@@ -36,7 +36,7 @@ contains
       integer :: status
 
       status = abc%to_c()
-      call assert_not_equal(status, 0)
+      call assert_not_equal(status, 0, verbosity=2)
    end subroutine
 
    !> @test Verify that calling `to_c` twice fails.
@@ -48,7 +48,7 @@ contains
       abc = f_c_string_t("abc")
       status = abc%to_c()
       status = abc%to_c()
-      call assert_not_equal(status, 0)
+      call assert_not_equal(status, 0, verbosity=2)
    end subroutine
 
    !> @test Convert "abc" to C string and check with C++ side.
@@ -59,9 +59,9 @@ contains
 
       abc = f_c_string_t("abc")
       status = abc%to_c()
-      call assert_equal(status, 0)
+      call assert_equal(status, 0, verbosity=2)
       status = str_equals_abc(abc%get_c_string())
-      call assert_equal(status, 0)
+      call assert_equal(status, 0, verbosity=2)
    end subroutine
 
    !> @test Convert "abc def" to C string and check with C++ side.
@@ -72,9 +72,9 @@ contains
 
       abc_def = f_c_string_t("abc def")
       status = abc_def%to_c()
-      call assert_equal(status, 0)
+      call assert_equal(status, 0, verbosity=2)
       status = str_equals_abc_space_def(abc_def%get_c_string())
-      call assert_equal(status, 0)
+      call assert_equal(status, 0, verbosity=2)
    end subroutine
 
 end module test_f_c_string_t_mod

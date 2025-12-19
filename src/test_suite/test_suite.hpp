@@ -111,11 +111,18 @@ namespace Fortest {
             if (m_suite_fixture) m_suite_fixture->setup();
 
             // Regular tests
+            const auto db_opt = std::make_optional<SqliteDb>(std::move(m_name + ".sqlite"));
+            db_opt.value().exec(
+                 "CREATE TABLE IF NOT EXISTS test_results ("
+                 "  test_name TEXT,"
+                 "  status TEXT,"
+                 "  duration_ms INTEGER"
+                 ");");
             for (auto &[test_name, test] : m_tests) {
                 std::string border = "\n" + std::string(40, '=');
                 logger->log("Running test: " + test_name, "INFO", border);
 
-                test.run(logger, m_assert);
+                test.run(logger, m_assert, db_opt);
                 m_statuses[test_name] = test.get_status();
 
                 if (test.get_status() == Test::Status::PASS) {

@@ -10,7 +10,9 @@ add_library(cpp_fortest SHARED
         test/parameterized_test.hpp
         test_session/test_session.hpp
         fixture/fixture.hpp
+        db/db.cpp
 )
+target_link_libraries(cpp_fortest PUBLIC SQLite::SQLite3)
 
 target_include_directories(cpp_fortest
         PUBLIC
@@ -20,6 +22,7 @@ target_include_directories(cpp_fortest
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/test>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/test_session>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/utils>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/db>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fixture>
         $<INSTALL_INTERFACE:include/fortest>)
 
@@ -88,6 +91,7 @@ install(FILES
         test_session/c_test_session.h
         utils/global_base.hpp
         fixture/fixture.hpp
+        db/db.hpp
         DESTINATION include/fortest
 )
 

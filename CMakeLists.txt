@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.20)
 
 project(Fortest VERSION 1.0.0 LANGUAGES CXX C Fortran)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+find_package(SQLite REQUIRED)
+
 # ------------------------------------------------------------------------------
 # Default install prefix: <build>/install if not set by user
 # ------------------------------------------------------------------------------
@@ -23,6 +27,7 @@ enable_testing()
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 
 # ------------------------------------------------------------------------------
 # Subdirectories

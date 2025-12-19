@@ -2,6 +2,7 @@
 #define FORTEST_PARAMETERIZED_TEST_HPP
 
 #include <functional>
+#include "db.hpp"
 #include <map>
 #include <memory>
 #include <string>
@@ -82,7 +83,8 @@ namespace Fortest {
          * @param assert Assertion manager used to track results.
          */
         template <LoggerLike TestLoggerType = Logger, LoggerLike AssertLoggerType = TestLoggerType>
-        void run(const std::shared_ptr<TestLoggerType> &logger, Assert<AssertLoggerType> &assert) {
+        void run(const std::shared_ptr<TestLoggerType> &logger, Assert<AssertLoggerType> &assert,
+            const std::optional<SqliteDb> &db = std::nullopt) {
             void *test_args = nullptr;
             void *suite_args = nullptr;
             void *session_args = nullptr;
@@ -114,6 +116,20 @@ namespace Fortest {
                         (assert.get_num_failed() == 0)
                         ? Status::PASS
                         : Status::FAIL;
+                    if (db.has_value()) {
+                        SqliteStmt stmt(db.value().get(),
+                                        "INSERT INTO test_results (test_name, status, duration_ms) "
+                                        "VALUES (?, ?, ?);");
+                        std::string status_str = (m_status_map[idx] == Status::PASS)
+                                                     ? "PASS"
+                                                     : "FAIL";
+                        sqlite3_bind_text(stmt.get(), 1, variation_name.c_str(), -1,
+                                          SQLITE_TRANSIENT);
+                        sqlite3_bind_text(stmt.get(), 2, status_str.c_str(), -1,
+                                          SQLITE_TRANSIENT);
+                        sqlite3_bind_int(stmt.get(), 3, 0);
+                        stmt.step();
+                    }
 
                     if (m_status_map[idx] == Status::PASS) {
                         logger->log("Test passed: " + variation_name, "PASS");

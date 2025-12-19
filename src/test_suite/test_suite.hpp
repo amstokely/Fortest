@@ -137,7 +137,7 @@ namespace Fortest {
                 std::string border = "\n" + std::string(40, '=');
                 logger->log("Running parameterized test: " + test_name, "INFO", border);
 
-                ptest.run(logger, m_assert);
+                ptest.run(logger, m_assert, db_opt);
 
                 auto statuses = get_statuses();
                 auto st = statuses[test_name];
